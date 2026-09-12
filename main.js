@@ -125,6 +125,8 @@ const footer = () =>
   `<footer class="site-footer"><a class="brand" href="#top"><span class="brand-mark">N</span><span>NATOG</span></a><p>Nature and Goods / Exported with care</p><div><a href="mailto:natogexports@gmail.com">natogexports@gmail.com</a><a href="tel:+919042286022">+91 90422 86022</a></div></footer>`;
 const contactSection = () =>
   `<section class="contact section-pad" id="contact"><div class="section-label">04 / Let’s work together</div><div class="contact-layout"><div><h2>Bring something<br /><em>good</em> to life.</h2><div class="contact-details"><a href="mailto:natogexports@gmail.com">natogexports@gmail.com <span>↗</span></a><a href="tel:+919042286022">+91 90422 86022 <span>↗</span></a><a href="${whatsappUrl}" target="_blank" rel="noreferrer">Chat on WhatsApp <span>↗</span></a></div></div><form class="contact-form"><label>Your email address<input type="email" placeholder="you@yourcompany.com" required /></label><label>What can we help you with?<textarea rows="3" placeholder="Tell us a little about your needs"></textarea></label><button class="button button-dark" type="submit">Send enquiry <span>↗</span></button><p class="form-note">We usually reply within 1–2 business days.</p></form></div></section>`;
+const productModalMarkup = () =>
+  `<div class="product-modal" role="dialog" aria-modal="true" aria-label="Product details" aria-hidden="true" inert><div class="modal-panel"><button class="modal-close" type="button" aria-label="Close product details">×</button><div class="modal-visual"></div><div class="modal-content"><span class="pill modal-type"></span><h2 class="modal-title"></h2><p class="modal-tagline"></p><div class="detail-grid"><div><span class="detail-label">Nutrients & compounds</span><p class="modal-nutrients"></p></div><div><span class="detail-label">Best suited for</span><p class="modal-support"></p></div><div><span class="detail-label">Available formats</span><p class="modal-forms"></p></div><div><span class="detail-label">Product applications</span><p class="modal-uses"></p></div></div><p class="modal-disclaimer">Traditional or nutritional support is not a claim to prevent, treat or cure disease. Always seek professional medical guidance for health concerns.</p><a class="button button-dark modal-enquire" href="#contact">Enquire about this product <span>↗</span></a></div></div></div>`;
 
 function homePage() {
   return `${header("home")}<main id="top"><section class="hero"><div class="hero-copy reveal"><p class="eyebrow"><span class="eyebrow-line"></span>Nature, made global</p><h1>Good things<br /><em>grow</em> here.</h1><p class="hero-intro">Thoughtfully sourced botanical ingredients for brands building a healthier, more natural world.</p><a class="button button-light" href="#products">Explore our products <span>↓</span></a></div><div class="hero-art reveal"><div class="hero-image"></div><div class="hero-stamp"><span>From source</span><strong>to shelf</strong><span class="stamp-star">✳</span></div><p class="hero-caption">01 / 04 <span>•</span> Botanical ingredients</p></div><div class="hero-scroll"><span>Scroll to discover</span><span class="scroll-line"></span></div></section><section class="intro section-pad"><div class="section-label">01 / Who we are</div><div class="intro-content"><h2>Nature has a way<br />of <em>knowing</em> what works.</h2><div class="intro-body"><p>NATOG is an Indian merchant export company connecting high-quality natural products with global markets. We source from trusted manufacturing partners for consistent quality, competitive pricing and dependable supply.</p><a class="text-link" href="#about">Meet NATOG <span>↗</span></a></div></div></section><section class="products section-pad" id="products"><div class="section-heading"><div class="earth-feature"><div class="section-label">02 / What we bring</div><div class="earth-feature-art"><span>✳</span><strong>Plant<br />to product</strong></div></div><h2>From the earth,<br /><em>with intention.</em></h2><div class="portfolio-callout"><span class="callout-count">08 / 03 / ∞</span><p>Eight natural ingredients.<br />Three product families.<br />One dependable partner.</p><a class="text-link" href="#products">Explore the portfolio <span>↗</span></a></div></div><div class="product-grid">${products.slice(0, 2).map(productCard).join("")}<article class="product-card product-note"><span class="note-mark">✳</span><h3>More good<br />things, growing.</h3><p>See the full catalogue with formats, nutrition and product applications.</p><a class="text-link" href="#products">View all products <span>↗</span></a></article></div></section><section class="standards" id="process"><div class="standards-image"></div><div class="standards-content"><div class="section-label">03 / Our promise</div><h2>Good for the<br /><em>ground.</em> Good for<br />your business.</h2><p>We believe better trade starts with better relationships. That means knowing where every ingredient comes from, treating every partner with care, and delivering a product you can feel confident putting your name on.</p><div class="stat-row"><div><strong>01</strong><span>Traceable<br />sourcing</span></div><div><strong>02</strong><span>Thoughtful<br />handling</span></div><div><strong>03</strong><span>Global<br />delivery</span></div></div></div></section>${contactSection()}</main>${footer()}`;
@@ -150,6 +152,14 @@ function render() {
   }
 }
 function bindInteractions() {
+  if (
+    document.querySelector(".catalog-card") &&
+    !document.querySelector(".product-modal")
+  ) {
+    document
+      .querySelector("#app")
+      .insertAdjacentHTML("beforeend", productModalMarkup());
+  }
   const menuToggle = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".desktop-nav");
   menuToggle?.addEventListener("click", () => {
@@ -182,6 +192,25 @@ function bindInteractions() {
         openProduct(button.dataset.product),
       ),
     );
+  document.querySelectorAll(".catalog-card").forEach((card) => {
+    const openCard = () =>
+      openProduct(card.querySelector(".product-trigger").dataset.product);
+    card.addEventListener("click", (event) => {
+      if (!event.target.closest("button")) openCard();
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openCard();
+      }
+    });
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute(
+      "aria-label",
+      `View ${card.querySelector("h3").textContent} details`,
+    );
+  });
   document
     .querySelector(".modal-close")
     ?.addEventListener("click", closeProduct);
@@ -218,6 +247,7 @@ function openProduct(id) {
   if (!product) return;
   lastFocusedProduct = document.activeElement;
   const modal = document.querySelector(".product-modal");
+  if (!modal) return;
   modal.querySelector(".modal-visual").className =
     `modal-visual ${product.color}`;
   modal.querySelector(".modal-visual").style.backgroundImage =
